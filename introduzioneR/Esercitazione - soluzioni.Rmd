@@ -1,0 +1,157 @@
+---
+title: "Esercitazione pratica"
+author: "Gaetano Scaduto"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduzione
+
+Questo file contiene il testo degli esercizi pratici da svolgere in R (o in altri software statistici, se preferite). Potetecercare online soluzioni ai problemi che incontrerete, e anzi vi incoraggio a farlo. Potete anche interrogare intelligenze artificiali se volete (ma occhio: sbagliano molto più spesso di quanto non sembri). Un'altra utilissima fonte è cercare le soluzioni sulla **traduzione italiana del più semplice e completo manuale di R che ci sia, che trovate a questo link** [[clicca qui]](https://it.r4ds.hadley.nz/). Quasi tutti gli esercizi possono essere svolti con piccole variazioni nel codice visto a lezione. Gli asterischi indicano il livello di difficoltà (\*=semplice, \*\*=medio, \*\*\*=difficile). Tutti gli esercizi devono essere svolti utilizzando il dataset visto a lezione, che dovrete caricare nell'ambiente Rstudio per svolgere tutti gli esercizi (rivedete il pdf della lezione se non ricordate come si fa e ricordate di caricare la libreria "rio" con il comando library(rio) ). Ricordate anche rimuovere i missing data col comando
+
+```{r, eval = F}
+data = data[complete.cases(data), ] 
+```
+
+come visto a lezione prima di iniziare a lavorare, altrimenti vi darà errore!
+
+Non abbiate paura se la prima volta che eseguite un comando vi dà errore. Controllate bene di non aver fatto errori di battitura (anche In mErItO al CaSE). Dopodiché, provate a cercare su internet il testo dell'errore (in inglese!). Provate anche a chiedere a chatgtp. Vale tutto!
+
+Ricordate anche di fare molta attenzione al fatto che R è case sensitive, quindi dovete mettere le maiuscole e le minuscole nel modo giusto!
+
+Vabè dai, vi dò una mano. I primi tre comandi che dovrete eseguire sono questi. Ma ricordate che, per funzionare, dovete aver installato la libreria "rio" la scorsa volta con il comando install.packages(). Se l'avete fatto l'altra volta e avete settato la cartella giusta la volta scorsa con il comando setwd() e non avete spostato file, andrà tutto bene.
+
+```{r}
+library(rio)
+data = import("ris2022_lezione.RDS")
+data = data[complete.cases(data), ]
+```
+
+## Esercizio 1\*
+
+-   Utilizzando il comando summary() sul dataset, ispezionate il suo output e riportate, per ogni variabile nel dataset, di che tipo di variabile si tratta (numerica o categoriale).
+```
+summary(data)
+```
+
+-   C'è qualche variabile che R "fraintende"? Se sì, quale?
+
+R fraintende la variabile "istat", che interpreta come numerica anche se non ha un significato numerico, ma categoriale (si tratta di un codice per identificare i comuni univocamente)
+
+## Esercizio 2\*
+
+-   Per ognuno dei sette partiti presenti nel dataset, calcola la media e la mediana dei voti ricevuti, utilizzando i comandi mean() e median() come visto a lezione
+
+```{r}
+mean(data$Lega)
+median(data$Lega)
+
+mean(data$Fi)
+median(data$Fi)
+
+
+mean(data$AVS)
+median(data$AVS)
+
+
+mean(data$M5S)
+median(data$M5S)
+
+
+mean(data$PD)
+median(data$PD)
+
+
+mean(data$Aziv)
+median(data$Aziv)
+
+
+mean(data$Fdi)
+median(data$Fdi)
+```
+
+-   Per quali partiti la media e la mediana sono più diversi? Riesci ad immaginare il perché?
+
+Lo sono soprattutto per i 5 stelle, che hanno preso tanti voti al sud (che ha meno comuni) e pochi voti al nord (che ha più comuni), quindi la distribuzione è più asimmetrica.
+
+## Esercizio 3\*
+
+-   Utilizzando il comando table() come visto a lezione, in quali regioni fratelli d'italia non è il partito più votato nella maggior parte dei comuni.
+
+    -   Indizio: per farlo, ti servirà incrociare solo due variabili già presenti nel dataset.
+
+```{r}
+table(data$regione, data$most_voted)
+
+```
+
+Come è possibile vedere, in Basilicata, Campania, Calabria, Puglia e Sicilia i 5 Stelle hanno vinto in più comuni rispetto a FDI.
+
+-   Forza Italia ha vinto soprattutto nei comuni di una regione in particolare. Sapresti dire quale?
+
+    La Calabria
+
+## Esercizio 4\*\*
+
+-   In classe abbiamo visto come la macroarea (nord, centro, sud) spiega il voto ai Cinque Stelle in maniera molto efficace. Replica la regressione univariata vista in classe in cui regredivamo la percentuale presa dai 5 stelle sulla variabile macroarea per un altro partito a tua scelta e confronta i risultati con quelli dei cinque stelle.
+
+    -   Ricorda di caricare la libreria "texreg" col comando library(texreg). Vedi il pdf della lezione.
+
+    Io ho deciso di farlo con la Lega
+
+    ```{r}
+    library(texreg)
+
+    regr = lm(data=data, Lega ~ macroarea)
+    screenreg(regr)
+    ```
+
+-   L'R quadro è più alto o più basso? Cosa significa?
+
+L'R-quadro è più basso rispetto a quello dei 5 Stelle, ma comunque rilevante
+
+-   Come interpreti gli effetti descritti dal modello?
+
+Che la Lega prende più voti al nord rispetto che al sud e al centro (e grazie)
+
+## Esercizio 5\*\*
+
+-   Utilizzando la libreria ggplot2 ed il comando visto a lezione (geom_point()), fai uno scatterplot (grafico coi puntini) dei voti del PD contro i voti di Fratelli d'Italia. Riesci a vederci una relazione?
+
+    -   Ricordati di caricare ggplot2 col comando library(ggplot2)
+
+```{r}
+library(ggplot2)
+
+ggplot(data, aes(x=PD, y=Fdi))+
+  geom_point()
+```
+
+Sembrerebbe proprio che ci sia una relazione di proporzionalità inversa.
+
+## Esercizio 6\*\*\*
+
+-   Utilizzando il comando max() trova qual è la massima percentuale presa dal Movimento 5 stelle in un comune.
+
+```{r}
+max(data$M5S)
+
+```
+
+-   Una volta ottenuto questo numero, usalo per trovare il nome del comune in cui i 5 Stelle hanno preso il massimo
+
+-   Indizio: puoi usare tanti diversi modi per farlo. Uno lo abbiamo visto a lezione (ma non sta nel pdf). Altri puoi trovarli cercando su internet o ragionandoci un po' su.
+
+Qui hai due opzioni: opzione facile fai View(data), poi clicchi su filter e scrivi 85.12 nella colonna corrispondente a M5S, e poi leggi il nome del comune. Opzione difficile (ma più veloce):
+
+```{r}
+data[data$M5S==85.12, ]$comune
+```
+
+-   Che cos'ha questo comune di speciale?
+
+È il paese di Giuseppe Conte.
